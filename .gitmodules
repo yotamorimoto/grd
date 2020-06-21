@@ -1,0 +1,3 @@
+[submodule "sc_sample"]
+	path = sc_sample
+	url = https://github.com/yotamorimoto/sc_sample.git
