@@ -1,12 +1,12 @@
 -- grd
 --
 -- :::..
--- 
+--
 -- k3 start/stop
 -- k2 page
 -- enc1,2 params
 
-local sc = include('grd/sc')
+local sc = include('lib/sc')
 
 engine.name = 'Grd'
 screen.font_face(1)

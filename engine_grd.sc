@@ -17,7 +17,7 @@ Engine_Grd : CroneEngine {
 			12 * deg.div(size) + mode[deg%size];
 		};
 		(
-			line: { |dur| Env.linen(0.01,0,dur).kr(2) },
+			line: { |dur| Env.linen(0.005,0,dur).kr(2) },
 			sine: { |dur| Env.sine(dur).kr(2) },
 			perc: { |dur| Env.perc(dur,0.01,1,6).kr(2) }
 		).keysValuesDo { |n,e|
@@ -46,7 +46,7 @@ Engine_Grd : CroneEngine {
 					amp:  dbamp(m[i*8+3].linlin(-1,1,-12,-3)-(i*1.5)),
 					dur:  duration*[m[i*8+4].linlin(-1,1,0.05,0.3),2].wchoose([0.9,0.1]),
 					pan:  m[i*8+5],
-				]);
+				], group);
 			};
 		});
 		this.addCommand(\pong, "f", { |m|
