@@ -29,6 +29,7 @@ grd1['n']  = 64
 grd1.fill = function(self)
   for i=1,self.n do self.xn[i] = math.random()*2-1 end
 end
+
 grd1.next = function(self,r,g,fx,map)
   local prev = { table.unpack(self.xn) }
   local halfG = g * 0.5
@@ -53,10 +54,63 @@ local function sendsc()
   engine.ping(table.unpack(grd1.xn))
 end
 
+-- MIDI SETUP
+local clk_midi = midi.connect()
+clk_midi.event = function(data)  
+  local d = midi.to_msg(data)
+  if d.type == "start" then
+    if not playing then 
+      clock.transport.reset()
+      clock.transport.start()
+    end
+  elseif d.type == "continue" then
+    if playing then 
+      clock.transport.stop()
+    else 
+      clock.transport.start()
+    end
+  end 
+  if d.type == "stop" then
+    clock.transport.stop()
+  end 
+  
+  -- placeholder for MIDI CC messages
+  if d.type == "cc" then
+    print("ch:".. d.ch .. " " .. d.type .. ":".. d.cc.. " ".. d.val)
+  end
+end
+
+-- CLOCK coroutines
+local clock_default = sc.linexp(_delta, 0, 1, 0.016, 3)
+local clock_speed = clock_default
+
+function pulse()
+  while true do
+    clock.sync(clock_speed)
+    sendsc()
+  end
+end
+function clock.transport.start()
+  print("transport.start")
+  id = clock.run(pulse)
+  playing = true
+end
+function clock.transport.stop()
+  print("transport.stop")
+  clock.cancel(id)
+  playing = false
+end
+function clock.transport.reset()
+  print("transport.reset")
+end
+
 function init()
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
-  metro_send = metro.init(sendsc, sc.linexp(_delta, 0, 1, 0.016, 3))
+  --metro_send = metro.init(sendsc, sc.linexp(_delta, 0, 1, 0.016, 3))
+
+  -- START CLOCK on INIT?
+  --clock.transport.start() 
 end
 
 -- should be global
@@ -88,11 +142,13 @@ function key(n,z)
   -- print('key' .. n .. " is " .. z)
   if n == 3 and z == 1 then
     if not playing then
-      metro_send:start()
-      playing = true
+      clock.transport.start()
+      --metro_send:start()
+      --playing = true
     else
-      metro_send:stop()
-      playing = false
+      clock.transport.stop()
+      --metro_send:stop()
+      --playing = false
     end
   elseif n == 2 and z == 1 then
     page = (page+1)%npages
@@ -107,7 +163,8 @@ function enc(n,d)
   elseif page == 1 then
     if n == 2 then
       _delta    = sc.clip(d*0.01 + _delta, 0.01,1)
-      metro_send.time = _delta
+      --metro_send.time = _delta
+      clock_speed = _delta
     end
     if n == 3 then
       _duration = sc.clip(d*0.01 + _duration, 0,1)
