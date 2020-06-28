@@ -56,24 +56,24 @@ end
 
 -- MIDI SETUP
 local clk_midi = midi.connect()
-clk_midi.event = function(data)  
+clk_midi.event = function(data)
   local d = midi.to_msg(data)
   if d.type == "start" then
-    if not playing then 
+    if not playing then
       clock.transport.reset()
       clock.transport.start()
     end
   elseif d.type == "continue" then
-    if playing then 
+    if playing then
       clock.transport.stop()
-    else 
+    else
       clock.transport.start()
     end
-  end 
+  end
   if d.type == "stop" then
     clock.transport.stop()
-  end 
-  
+  end
+
   -- placeholder for MIDI CC messages
   if d.type == "cc" then
     print("ch:".. d.ch .. " " .. d.type .. ":".. d.cc.. " ".. d.val)
@@ -110,7 +110,7 @@ function init()
   --metro_send = metro.init(sendsc, sc.linexp(_delta, 0, 1, 0.016, 3))
 
   -- START CLOCK on INIT?
-  --clock.transport.start() 
+  --clock.transport.start()
 end
 
 -- should be global
@@ -175,6 +175,6 @@ end
 
 function cleanup()
   m_draw:stop()
-  m_send:stop()
+  --m_send:stop()
   metro.free_all()
 end
