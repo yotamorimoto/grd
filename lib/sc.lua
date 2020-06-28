@@ -5,10 +5,10 @@ function sc.fold(x,lo,hi)
   x = x - lo
   r = hi - lo
   w = mod(x,r)
-  if mod(x/r,2) > 1 then 
-    return hi - w 
-    else 
-    return lo + w 
+  if mod(x/r,2) > 1 then
+    return hi - w
+    else
+    return lo + w
   end
 end
 function sc.fold2(x) return sc.fold(x,-1,1) end
@@ -31,11 +31,6 @@ function sc.linlin(x,a,b,c,d)
 end
 function sc.lin1(x,lo,hi) return sc.linlin(x,0,1,lo,hi) end
 function sc.lin2(x,lo,hi) return sc.linlin(x,-1,1,lo,hi) end
-function sc.linexp(x,a,b,c,d)
-  if x <= a then return c end
-  if x >= b then return d end
-  return math.pow(d / c, (x - a) / (b - a)) * c
-end
 function sc.linexp(x,a,b,c,d)
   if x <= a then return c end
   if x >= b then return d end
