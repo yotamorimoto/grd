@@ -6,9 +6,10 @@ Engine_Grd : CroneEngine {
 	*new { |context, doneCallback| ^super.new(context, doneCallback) }
 
 	alloc {
+		Server.default = context.server;
 		duration = 1;
 		group  = ParGroup.tail(context.xg);
-		sample = Sample.celesta(context.server);
+		sample = Sample.celesta;
 		map    = sample.map;
 		mode = [0,2,4,5,7,9,11];
 		d2k = { |degree, mode|
