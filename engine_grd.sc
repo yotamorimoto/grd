@@ -9,7 +9,7 @@ Engine_Grd : CroneEngine {
 		Server.default = context.server;
 		duration = 1;
 		group  = ParGroup.tail(context.xg);
-		sample = Sample.celesta;
+		sample = Sample.tweed;
 		map    = sample.map;
 		mode = [0,2,4,5,7,9,11];
 		d2k = { |degree, mode|
