@@ -8,6 +8,7 @@ Engine_Grd : CroneEngine {
 	alloc {
 		Server.default = context.server;
 		duration = 1;
+		root = 50;
 		group  = ParGroup.tail(context.xg);
 		sample = Sample.tweed;
 		map    = sample.map;
@@ -38,7 +39,7 @@ Engine_Grd : CroneEngine {
 		};
 		this.addCommand(\ping, "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", { |m|
 			var key;
-			([0,12,24]+50).do { |base,i|
+			([0,12,24]+root).do { |base,i|
 				key = d2k.((m[i*8+1]*8).asInt, mode);
 				Synth.grain([\sine,\line,\perc][((m[i*8+2].abs*6)%3).asInt], [
 					buf:  map[base+key][0],
@@ -52,6 +53,9 @@ Engine_Grd : CroneEngine {
 		});
 		this.addCommand(\pong, "f", { |m|
 		  duration = m[1]
+		});
+		this.addCommand(\root, "f", { |m|
+		  root = m[1]
 		});
 	}
 	free { sample.free }
