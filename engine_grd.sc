@@ -1,7 +1,7 @@
 Engine_Grd : CroneEngine {
 
 	var group,sample,map,d2k;
-	var duration, mode;
+	var duration, root, mode;
 
 	*new { |context, doneCallback| ^super.new(context, doneCallback) }
 
