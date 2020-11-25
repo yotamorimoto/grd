@@ -14,14 +14,16 @@ screen.font_size(8)
 
 local playing = false
 local page = 0
-local npages = 2
-local _r = 0.4
-local _g = 0.3
-local _delta = 0.01
-local _duration = 0
+local npages = 3
+local _r = 0.7
+local _g = 0.1
+local _delta = 0.3
+local _duration = 0.6
+local _dur
+local _root = 50
+local _mode = 0
 
 local metro_draw
-local metro_send
 
 local grd1 = {}
 grd1['xn'] = {}
@@ -45,7 +47,7 @@ grd1.next = function(self,r,g,fx,map)
 end
 
 local fx  = function(r,x) return 1 - (r*(x*x)) end
-local map = function(r) return sc.lin1(r,1.45,2) end
+local map = function(r) return sc.lin1(r,1,2) end
 
 grd1:fill()
 
@@ -80,13 +82,10 @@ clk_midi.event = function(data)
   end
 end
 
--- CLOCK coroutines
-local clock_default = sc.linexp(_delta, 0, 1, 0.016, 3)
-local clock_speed = clock_default
-
+-- clock
 function pulse()
   while true do
-    clock.sync(clock_speed)
+    clock.sync(_delta)
     sendsc()
   end
 end
@@ -105,12 +104,10 @@ function clock.transport.reset()
 end
 
 function init()
+  _dur = sc.linexp(_duration, 0,1, 0.05,23)
+  engine.pong(_dur)
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
-  --metro_send = metro.init(sendsc, sc.linexp(_delta, 0, 1, 0.016, 3))
-
-  -- START CLOCK on INIT?
-  --clock.transport.start()
 end
 
 -- should be global
@@ -127,14 +124,19 @@ function redraw()
   end
   screen.level(page == 0 and 15 or 2)
   screen.move(64,12)
-  screen.text('r: ' .. sc.round(_r,4))
+  screen.text('R: ' .. sc.round(_r,3))
   screen.move(64,20)
-  screen.text('g: ' .. sc.round(_g,4))
+  screen.text('G: ' .. sc.round(_g,3))
   screen.level(page == 1 and 15 or 2)
   screen.move(64,28)
-  screen.text('delta: ' .. sc.round(_delta,4))
+  screen.text('delta: ' .. sc.round(_delta,3))
   screen.move(64,36)
-  screen.text('duration: ' .. sc.round(_duration,4))
+  screen.text('dur: ' .. sc.round(_dur,3))
+  screen.level(page == 2 and 15 or 2)
+  screen.move(64,44)
+  screen.text('root: ' .. _root)
+  screen.move(64,52)
+  screen.text('mode: ' .. _mode)
   screen.update()
 end
 
@@ -143,12 +145,8 @@ function key(n,z)
   if n == 3 and z == 1 then
     if not playing then
       clock.transport.start()
-      --metro_send:start()
-      --playing = true
     else
       clock.transport.stop()
-      --metro_send:stop()
-      --playing = false
     end
   elseif n == 2 and z == 1 then
     page = (page+1)%npages
@@ -159,22 +157,29 @@ function enc(n,d)
   -- print('enc ' .. n .. ' is ' .. d)
   if page == 0 then
     if n == 2 then _r = sc.clip(_r+(d*0.001),0,1) end
-    if n == 3 then _g = sc.clip(_g+(d*0.001),0,1.05) end
+    if n == 3 then _g = sc.clip(_g+(d*0.001),0,1) end
   elseif page == 1 then
     if n == 2 then
-      _delta    = sc.clip(d*0.01 + _delta, 0.01,1)
-      --metro_send.time = _delta
-      clock_speed = _delta
+      _delta = sc.clip(d*0.01 + _delta, 0.02,2)
     end
     if n == 3 then
       _duration = sc.clip(d*0.01 + _duration, 0,1)
-      engine.pong(sc.linexp(_duration, 0,1, 0.2,23))
+      _dur = sc.linexp(_duration, 0,1, 0.05,23)
+      engine.pong(_dur)
+    end
+  elseif page == 2 then
+    if n == 2 then
+      _root = sc.clip(d + _root, 0,127)
+      engine.set_root(_root)
+    end
+    if n == 3 then
+      _mode = sc.clip(d + _mode, 0,6)
+      engine.set_mode(_mode)
     end
   end
 end
 
 function cleanup()
   m_draw:stop()
-  --m_send:stop()
   metro.free_all()
 end
