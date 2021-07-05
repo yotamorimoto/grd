@@ -1,4 +1,4 @@
 # grd
-sprinkled celesta
+sprinkled celesta for norns sound computer
 
 ![screenshot](grd.png)
