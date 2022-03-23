@@ -14,7 +14,8 @@ screen.font_size(8)
 
 local playing = false
 local page = 0
-local npages = 3
+local npages = 4
+local nsounds = 11
 local _r = 0.7
 local _g = 0.1
 local _delta = 0.3
@@ -22,6 +23,7 @@ local _duration = 0.6
 local _dur
 local _root = 50
 local _mode = 0
+local _sound = 0
 
 local metro_draw
 
@@ -122,21 +124,25 @@ function redraw()
       index = index + 1
     end
   end
+  offset = 3
   screen.level(page == 0 and 15 or 2)
-  screen.move(64,12)
+  screen.move(64,8+offset)
   screen.text('R: ' .. sc.round(_r,3))
-  screen.move(64,20)
+  screen.move(64,14+offset)
   screen.text('G: ' .. sc.round(_g,3))
   screen.level(page == 1 and 15 or 2)
-  screen.move(64,28)
+  screen.move(64,20+offset)
   screen.text('delta: ' .. sc.round(_delta,3))
-  screen.move(64,36)
+  screen.move(64,26+offset)
   screen.text('dur: ' .. sc.round(_dur,3))
   screen.level(page == 2 and 15 or 2)
-  screen.move(64,44)
+  screen.move(64,32+offset)
   screen.text('root: ' .. _root)
-  screen.move(64,52)
+  screen.move(64,38+offset)
   screen.text('mode: ' .. _mode)
+  screen.level(page == 3 and 15 or 2)
+  screen.move(64,44+offset)
+  if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end
   screen.update()
 end
 
@@ -175,6 +181,11 @@ function enc(n,d)
     if n == 3 then
       _mode = sc.clip(d + _mode, 0,6)
       engine.set_mode(_mode)
+    end
+  elseif page == 3 then
+    if n == 2 then
+      _sound = sc.clip(d + _sound, 0, nsounds)
+      engine.set_sound(_sound)
     end
   end
 end
