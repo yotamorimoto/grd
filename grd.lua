@@ -4,7 +4,8 @@
 --
 -- k3 start/stop
 -- k2 page
--- enc1,2 params
+-- enc1 section 
+-- enc2,3 params
 
 local sc = include('lib/sc')
 
@@ -13,6 +14,8 @@ screen.font_face(1)
 screen.font_size(8)
 
 local playing = false
+local section = 0
+-- local nsections = 2
 local page = 0
 local npages = 4
 local nsounds = 11
@@ -130,23 +133,39 @@ function redraw()
   offset = 3
   screen.level(page == 0 and 15 or 2)
   screen.move(64,8+offset)
-  screen.text('R: ' .. sc.round(params:get('_r'),3))
-  screen.move(64,14+offset)
-  screen.text('G: ' .. sc.round(params:get('_g'),3))
+  if section == 0 then
+    screen.text('R: ' .. sc.round(params:get('_r'),3))
+    screen.move(64,14+offset)
+    screen.text('G: ' .. sc.round(params:get('_g'),3))
+  else
+    --     
+  end
   screen.level(page == 1 and 15 or 2)
   screen.move(64,20+offset)
-  screen.text('delta: ' .. sc.round(params:get('_delta'),3))
-  screen.move(64,26+offset)
-  screen.text('dur: ' .. sc.round(params:get('_duration'),3))
+  if section == 0 then
+    screen.text('delta: ' .. sc.round(params:get('_delta'),3))
+    screen.move(64,26+offset)
+    screen.text('dur: ' .. sc.round(params:get('_duration'),3))  
+  else
+    -- 
+  end
   screen.level(page == 2 and 15 or 2)
   screen.move(64,32+offset)
-  screen.text('root: ' .. params:get('_root'))
-  screen.move(64,38+offset)
-  screen.text('mode: ' .. params:get('_mode'))
+  if section == 0 then
+    screen.text('root: ' .. params:get('_root'))
+    screen.move(64,38+offset)
+    screen.text('mode: ' .. params:get('_mode'))  
+  else
+    --
+  end
   screen.level(page == 3 and 15 or 2)
   screen.move(64,44+offset)
-  local _sound = params:get('_sound')
-  if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end
+  if section == 0 then
+    local _sound = params:get('_sound')
+    if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end  
+  else
+    --
+  end
   screen.update()
 end
 
@@ -165,29 +184,36 @@ end
 
 function enc(n,d)
   -- print('enc ' .. n .. ' is ' .. d)
-  if page == 0 then
-    if n == 2 then params:delta('_r', d) end
-    if n == 3 then params:delta('_g', d) end
-  elseif page == 1 then
-    if n == 2 then params:delta('_delta', d) end
-    if n == 3 then
-      params:delta('_duration', d)
-      engine.pong(params:get('_duration'))
+  if n == 1 then
+    section = util.clamp(section + d,0,1)
+  end
+  if section == 0 then
+    if page == 0 then
+      if n == 2 then params:delta('_r', d) end
+      if n == 3 then params:delta('_g', d) end
+    elseif page == 1 then
+      if n == 2 then params:delta('_delta', d) end
+      if n == 3 then
+        params:delta('_duration', d)
+        engine.pong(params:get('_duration'))
+      end
+    elseif page == 2 then
+      if n == 2 then
+        params:delta('_root', d)
+        engine.set_root(params:get('_root'))
+      end
+      if n == 3 then
+        params:delta('_mode', d)
+        engine.set_mode(params:get('_mode'))
+      end
+    elseif page == 3 then
+      if n == 2 then
+        params:delta('_sound', d)
+        engine.set_sound(params:get('_sound'))
+      end
     end
-  elseif page == 2 then
-    if n == 2 then
-      params:delta('_root', d)
-      engine.set_root(params:get('_root'))
-    end
-    if n == 3 then
-      params:delta('_mode', d)
-      engine.set_mode(params:get('_mode'))
-    end
-  elseif page == 3 then
-    if n == 2 then
-      params:delta('_sound', d)
-      engine.set_sound(params:get('_sound'))
-    end
+  else
+    --
   end
 end
 
