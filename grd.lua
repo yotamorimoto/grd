@@ -107,13 +107,13 @@ function init()
   params:add_control('_duration','dur',controlspec.new(0.05,23,'exp',0.05,0.6,'',0.05,false))
   params:set_action('_duration', function(duration) engine.pong(duration) end)
 
-  params:add_control('_root','root',controlspec.new(0,127,'lin',1,50,''))
+  params:add_number('_root', 'root', 0, 127, 50)
   params:set_action('_root', function(root) engine.set_root(root) end)
 
-  params:add_control('_mode','mode',controlspec.new(0,6,'lin',1,0,''))
+  params:add_number('_mode','mode', 0, 6, 1)
   params:set_action('_mode', function(mode) engine.set_mode(mode) end)
 
-  params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
+  params:add_number('_sound','sound', 0, nsounds, 0)
   params:set_action('_sound', function(sound) engine.set_sound(sound) end)
 
   metro_draw = metro.init(function() redraw() end, 1/60)
