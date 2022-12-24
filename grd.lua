@@ -16,14 +16,6 @@ local playing = false
 local page = 0
 local npages = 4
 local nsounds = 11
-local _r = 0.7
-local _g = 0.1
-local _delta = 0.3
-local _duration = 0.6
-local _dur
-local _root = 50
-local _mode = 0
-local _sound = 0
 
 local metro_draw
 
@@ -54,6 +46,8 @@ local map = function(r) return sc.lin1(r,1,2) end
 grd1:fill()
 
 local function sendsc()
+  local _r = params:get('_r')
+  local _g = params:get('_g')
   grd1:next(_r, _g, fx, map)
   engine.ping(table.unpack(grd1.xn))
 end
@@ -87,7 +81,7 @@ end
 -- clock
 function pulse()
   while true do
-    clock.sync(_delta)
+    clock.sync(params:get('_delta'))
     sendsc()
   end
 end
@@ -106,8 +100,14 @@ function clock.transport.reset()
 end
 
 function init()
-  _dur = sc.linexp(_duration, 0,1, 0.05,23)
-  engine.pong(_dur)
+  params:add_control('_r','R',controlspec.new(0,1,'lin',0.001,0.7,'',0.001,false))
+  params:add_control('_g','G',controlspec.new(0,1,'lin',0.001,0.1,'',0.001,false))
+  params:add_control('_delta','delta',controlspec.new(0.02,2,'lin',0.01,0.3,'',0.01,false))
+  params:add_control('_duration','dur',controlspec.new(0.05,23,'exp',0.05,0.6,'',0.05,false))
+  engine.pong(params:get('_duration'))
+  params:add_control('_root','root',controlspec.new(0,127,'lin',1,50,''))
+  params:add_control('_mode','mode',controlspec.new(0,6,'lin',1,0,''))
+  params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
 end
@@ -127,21 +127,22 @@ function redraw()
   offset = 3
   screen.level(page == 0 and 15 or 2)
   screen.move(64,8+offset)
-  screen.text('R: ' .. sc.round(_r,3))
+  screen.text('R: ' .. sc.round(params:get('_r'),3))
   screen.move(64,14+offset)
-  screen.text('G: ' .. sc.round(_g,3))
+  screen.text('G: ' .. sc.round(params:get('_g'),3))
   screen.level(page == 1 and 15 or 2)
   screen.move(64,20+offset)
-  screen.text('delta: ' .. sc.round(_delta,3))
+  screen.text('delta: ' .. sc.round(params:get('_delta'),3))
   screen.move(64,26+offset)
-  screen.text('dur: ' .. sc.round(_dur,3))
+  screen.text('dur: ' .. sc.round(params:get('_duration'),3))
   screen.level(page == 2 and 15 or 2)
   screen.move(64,32+offset)
-  screen.text('root: ' .. _root)
+  screen.text('root: ' .. params:get('_root'))
   screen.move(64,38+offset)
-  screen.text('mode: ' .. _mode)
+  screen.text('mode: ' .. params:get('_mode'))
   screen.level(page == 3 and 15 or 2)
   screen.move(64,44+offset)
+  local _sound = params:get('_sound')
   if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end
   screen.update()
 end
@@ -162,30 +163,27 @@ end
 function enc(n,d)
   -- print('enc ' .. n .. ' is ' .. d)
   if page == 0 then
-    if n == 2 then _r = sc.clip(_r+(d*0.001),0,1) end
-    if n == 3 then _g = sc.clip(_g+(d*0.001),0,1) end
+    if n == 2 then params:delta('_r', d) end
+    if n == 3 then params:delta('_g', d) end
   elseif page == 1 then
-    if n == 2 then
-      _delta = sc.clip(d*0.01 + _delta, 0.02,2)
-    end
+    if n == 2 then params:delta('_delta', d) end
     if n == 3 then
-      _duration = sc.clip(d*0.01 + _duration, 0,1)
-      _dur = sc.linexp(_duration, 0,1, 0.05,23)
-      engine.pong(_dur)
+      params:delta('_duration', d)
+      engine.pong(params:get('_duration'))
     end
   elseif page == 2 then
     if n == 2 then
-      _root = sc.clip(d + _root, 0,127)
-      engine.set_root(_root)
+      params:delta('_root', d)
+      engine.set_root(params:get('_root'))
     end
     if n == 3 then
-      _mode = sc.clip(d + _mode, 0,6)
-      engine.set_mode(_mode)
+      params:delta('_mode', d)
+      engine.set_mode(params:get('_mode'))
     end
   elseif page == 3 then
     if n == 2 then
-      _sound = sc.clip(d + _sound, 0, nsounds)
-      engine.set_sound(_sound)
+      params:delta('_sound', d)
+      engine.set_sound(params:get('_sound'))
     end
   end
 end
