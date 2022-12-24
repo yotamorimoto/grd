@@ -103,6 +103,7 @@ function clock.transport.reset()
 end
 
 function init()
+  -- section 0
   params:add_control('_r','R',controlspec.new(0,1,'lin',0.001,0.7,'',0.001,false))
   params:add_control('_g','G',controlspec.new(0,1,'lin',0.001,0.1,'',0.001,false))
   params:add_control('_delta','delta',controlspec.new(0.02,2,'lin',0.01,0.3,'',0.01,false))
@@ -114,6 +115,9 @@ function init()
   params:set_action('_mode', function(mode) engine.set_mode(mode) end)
   params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
   params:set_action('_sound', function(sound) engine.set_sound(sound) end)
+  -- section 1
+  -- tempo
+  -- reverb
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
 end
@@ -138,7 +142,10 @@ function redraw()
     screen.move(64,14+offset)
     screen.text('G: ' .. sc.round(params:get('_g'),3))
   else
-    --     
+    screen.level(15)
+    screen.text('tempo: ' .. params:get('clock_tempo'))
+    screen.move(64,14+offset)
+    screen.text('reverb: ' .. params:string('reverb'))
   end
   screen.level(page == 1 and 15 or 2)
   screen.move(64,20+offset)
@@ -212,8 +219,18 @@ function enc(n,d)
         engine.set_sound(params:get('_sound'))
       end
     end
-  else
-    --
+  else  -- section 1
+    -- if page == 0 then
+      if n == 2 then
+        params:delta('clock_tempo', d)
+      end
+      if n == 3 then
+        local rev = d > 0 and 2 or 1
+        params:set('reverb', rev)
+        if rev == 1 then audio.rev_off() else audio.rev_on() end
+        norns.state.mix.aux = rev
+      end
+    -- end
   end
 end
 
