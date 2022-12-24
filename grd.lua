@@ -74,7 +74,7 @@ clk_midi.event = function(data)
 
   -- placeholder for MIDI CC messages
   if d.type == "cc" then
-    print("ch:".. d.ch .. " " .. d.type .. ":".. d.cc.. " ".. d.val)
+    -- print("ch:".. d.ch .. " " .. d.type .. ":".. d.cc.. " ".. d.val)
   end
 end
 
@@ -103,11 +103,19 @@ function init()
   params:add_control('_r','R',controlspec.new(0,1,'lin',0.001,0.7,'',0.001,false))
   params:add_control('_g','G',controlspec.new(0,1,'lin',0.001,0.1,'',0.001,false))
   params:add_control('_delta','delta',controlspec.new(0.02,2,'lin',0.01,0.3,'',0.01,false))
+
   params:add_control('_duration','dur',controlspec.new(0.05,23,'exp',0.05,0.6,'',0.05,false))
-  engine.pong(params:get('_duration'))
+  params:set_action('_duration', function(duration) engine.pong(duration) end)
+
   params:add_control('_root','root',controlspec.new(0,127,'lin',1,50,''))
+  params:set_action('_root', function(root) engine.set_root(root) end)
+
   params:add_control('_mode','mode',controlspec.new(0,6,'lin',1,0,''))
+  params:set_action('_mode', function(mode) engine.set_mode(mode) end)
+
   params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
+  params:set_action('_sound', function(sound) engine.set_sound(sound) end)
+
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
 end
@@ -174,16 +182,13 @@ function enc(n,d)
   elseif page == 2 then
     if n == 2 then
       params:delta('_root', d)
-      engine.set_root(params:get('_root'))
     end
     if n == 3 then
       params:delta('_mode', d)
-      engine.set_mode(params:get('_mode'))
     end
   elseif page == 3 then
     if n == 2 then
       params:delta('_sound', d)
-      engine.set_sound(params:get('_sound'))
     end
   end
 end
