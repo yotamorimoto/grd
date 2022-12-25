@@ -15,7 +15,7 @@ screen.font_size(8)
 
 local playing = false
 local section = 0
--- local nsections = 2
+local nsections = 2
 local page = 0
 local npages = 4
 local nsounds = 11
@@ -103,7 +103,6 @@ function clock.transport.reset()
 end
 
 function init()
-  -- section 0
   params:add_control('_r','R',controlspec.new(0,1,'lin',0.001,0.7,'',0.001,false))
   params:add_control('_g','G',controlspec.new(0,1,'lin',0.001,0.1,'',0.001,false))
   params:add_control('_delta','delta',controlspec.new(0.02,2,'lin',0.01,0.3,'',0.01,false))
@@ -115,11 +114,35 @@ function init()
   params:set_action('_mode', function(mode) engine.set_mode(mode) end)
   params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
   params:set_action('_sound', function(sound) engine.set_sound(sound) end)
-  -- section 1
-  -- tempo
-  -- reverb
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
+end
+
+redraw_pages = {} -- page, section, element
+for i = 0, npages-1 do
+  redraw_pages[i] = {}
+  for j = 0, nsections-1 do
+    redraw_pages[i][j] = {}
+  end
+end
+
+redraw_pages[0][0][1] = function() screen.text('R: ' .. sc.round(params:get('_r'),3)) end
+redraw_pages[0][0][2] = function() screen.text('G: ' .. sc.round(params:get('_g'),3)) end
+redraw_pages[1][0][1] = function() screen.text('delta: ' .. sc.round(params:get('_delta'),3)) end
+redraw_pages[1][0][2] = function() screen.text('dur: ' .. sc.round(params:get('_duration'),3)) end
+redraw_pages[2][0][1] = function() screen.text('root: ' .. params:get('_root')) end
+redraw_pages[2][0][2] = function() screen.text('mode: ' .. params:get('_mode')) end
+redraw_pages[3][0][1] = function()
+    local _sound = params:get('_sound')
+    if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end
+  end
+
+redraw_pages[0][1][1] = function() screen.text('tempo: ' .. params:get('clock_tempo')) end
+redraw_pages[0][1][2] = function() screen.text('reverb: ' .. params:string('reverb')) end
+for i = 1,3 do
+  for j = 1,2 do
+    redraw_pages[i][1][j] = function() end
+  end
 end
 
 -- should be global
@@ -134,45 +157,30 @@ function redraw()
       index = index + 1
     end
   end
+
   offset = 3
-  screen.level(page == 0 and 15 or 2)
+  screen.level((page == 0 or section == 1) and 15 or 2)
   screen.move(64,8+offset)
-  if section == 0 then
-    screen.text('R: ' .. sc.round(params:get('_r'),3))
-    screen.move(64,14+offset)
-    screen.text('G: ' .. sc.round(params:get('_g'),3))
-  else
-    screen.level(15)
-    screen.text('tempo: ' .. params:get('clock_tempo'))
-    screen.move(64,14+offset)
-    screen.text('reverb: ' .. params:string('reverb'))
-  end
+  redraw_pages[0][section][1]()
+  screen.move(64,14+offset)
+  redraw_pages[0][section][2]()
+
   screen.level(page == 1 and 15 or 2)
   screen.move(64,20+offset)
-  if section == 0 then
-    screen.text('delta: ' .. sc.round(params:get('_delta'),3))
-    screen.move(64,26+offset)
-    screen.text('dur: ' .. sc.round(params:get('_duration'),3))  
-  else
-    -- 
-  end
+  redraw_pages[1][section][1]()
+  screen.move(64,26+offset)
+  redraw_pages[1][section][2]()
+
   screen.level(page == 2 and 15 or 2)
   screen.move(64,32+offset)
-  if section == 0 then
-    screen.text('root: ' .. params:get('_root'))
-    screen.move(64,38+offset)
-    screen.text('mode: ' .. params:get('_mode'))  
-  else
-    --
-  end
+  redraw_pages[2][section][1]()
+  screen.move(64,38+offset)
+  redraw_pages[2][section][2]()
+
   screen.level(page == 3 and 15 or 2)
   screen.move(64,44+offset)
-  if section == 0 then
-    local _sound = params:get('_sound')
-    if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end  
-  else
-    --
-  end
+  redraw_pages[3][section][1]()
+
   screen.update()
 end
 
@@ -189,49 +197,37 @@ function key(n,z)
   end
 end
 
+enc_update = {}  -- page, section, enc
+for i = 0, npages-1 do
+  enc_update[i] = {}
+  for j = 0, nsections-1 do
+    enc_update[i][j] = {}
+  end
+end
+
+enc_update[0][0][2] = function(d) params:delta('_r', d) end
+enc_update[0][0][3] = function(d) params:delta('_g', d) end
+enc_update[1][0][2] = function(d) params:delta('_delta', d) end 
+enc_update[1][0][3] = function(d) params:delta('_duration', d); engine.pong(params:get('_duration')) end
+enc_update[2][0][2] = function(d) params:delta('_root', d); engine.set_root(params:get('_root')) end
+enc_update[2][0][3] = function(d) params:delta('_mode', d); engine.set_mode(params:get('_mode')) end
+enc_update[3][0][2] = function(d) params:delta('_sound', d); engine.set_sound(params:get('_sound')) end
+enc_update[3][0][3] = function(d) end
+for i=0,3 do
+  enc_update[i][1][2] = function(d) params:delta('clock_tempo', d) end
+  enc_update[i][1][3] = function(d)
+      local rev = d > 0 and 2 or 1
+      params:set('reverb', rev)
+      if rev == 1 then audio.rev_off() else audio.rev_on() end
+      norns.state.mix.aux = rev
+  end
+end
+
 function enc(n,d)
-  -- print('enc ' .. n .. ' is ' .. d)
   if n == 1 then
-    section = util.clamp(section + d,0,1)
+    section = util.clamp(section + d, 0, nsections-1)
   end
-  if section == 0 then
-    if page == 0 then
-      if n == 2 then params:delta('_r', d) end
-      if n == 3 then params:delta('_g', d) end
-    elseif page == 1 then
-      if n == 2 then params:delta('_delta', d) end
-      if n == 3 then
-        params:delta('_duration', d)
-        engine.pong(params:get('_duration'))
-      end
-    elseif page == 2 then
-      if n == 2 then
-        params:delta('_root', d)
-        engine.set_root(params:get('_root'))
-      end
-      if n == 3 then
-        params:delta('_mode', d)
-        engine.set_mode(params:get('_mode'))
-      end
-    elseif page == 3 then
-      if n == 2 then
-        params:delta('_sound', d)
-        engine.set_sound(params:get('_sound'))
-      end
-    end
-  else  -- section 1
-    -- if page == 0 then
-      if n == 2 then
-        params:delta('clock_tempo', d)
-      end
-      if n == 3 then
-        local rev = d > 0 and 2 or 1
-        params:set('reverb', rev)
-        if rev == 1 then audio.rev_off() else audio.rev_on() end
-        norns.state.mix.aux = rev
-      end
-    -- end
-  end
+  enc_update[page][section][n](d)
 end
 
 function cleanup()
