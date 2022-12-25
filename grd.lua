@@ -224,27 +224,6 @@ for i=0,3 do
 end
 
 function enc(n,d)
-  -- print('enc ' .. n .. ' is ' .. d)
-  if page == 0 then
-    if n == 2 then params:delta('_r', d) end
-    if n == 3 then params:delta('_g', d) end
-  elseif page == 1 then
-    if n == 2 then params:delta('_delta', d) end
-    if n == 3 then
-      params:delta('_duration', d)
-      engine.pong(params:get('_duration'))
-    end
-  elseif page == 2 then
-    if n == 2 then
-      params:delta('_root', d)
-    end
-    if n == 3 then
-      params:delta('_mode', d)
-    end
-  elseif page == 3 then
-    if n == 2 then
-      params:delta('_sound', d)
-    end
   if n == 1 then
     section = util.clamp(section + d, 0, nsections-1)
   end
