@@ -22,6 +22,10 @@ local nsounds = 11
 
 local metro_draw
 
+-- see https://monome.org/docs/norns/reference/lib/lfo
+_lfos = require 'lfo'
+
+
 local grd1 = {}
 grd1['xn'] = {}
 grd1['n']  = 64
@@ -103,6 +107,26 @@ function clock.transport.reset()
 end
 
 function init()
+  params:add_group('LFOs', 15*6)   -- rows * #lfo
+  r_lfo = _lfos:add{min = 0, max = 1}
+  r_lfo:add_params('r_lfo', 'R')
+  r_lfo:set('action', function(s) params:set('_r', s) end)
+  g_lfo = _lfos:add{min = 0, max = 1}
+  g_lfo:add_params('g_lfo', 'G')
+  g_lfo:set('action', function(s) params:set('_g', s) end)
+  delta_lfo = _lfos:add{min = 0.02, max = 2}
+  delta_lfo:add_params('delta_lfo', 'delta')
+  delta_lfo:set('action', function(s) params:set('_delta', s) end)
+  duration_lfo = _lfos:add{min = 0.05, max = 23}
+  duration_lfo:add_params('duration_lfo', 'duration')
+  duration_lfo:set('action', function(s) params:set('_duration', s) end)
+  root_lfo = _lfos:add{min = 20, max = 90}
+  root_lfo:add_params('root_lfo', 'root')
+  root_lfo:set('action', function(s) params:set('_root', s) end)
+  mode_lfo = _lfos:add{min = 0, max = 6}
+  mode_lfo:add_params('mode_lfo', 'mode')
+  mode_lfo:set('action', function(s) params:set('_mode', s) end)
+
   params:add_control('_r','R',controlspec.new(0,1,'lin',0.001,0.7,'',0.001,false))
   params:add_control('_g','G',controlspec.new(0,1,'lin',0.001,0.1,'',0.001,false))
   params:add_control('_delta','delta',controlspec.new(0.02,2,'lin',0.01,0.3,'',0.01,false))
@@ -114,8 +138,10 @@ function init()
   params:set_action('_mode', function(mode) engine.set_mode(mode) end)
   params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
   params:set_action('_sound', function(sound) engine.set_sound(sound) end)
+
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
+
 end
 
 redraw_pages = {} -- page, section, element
