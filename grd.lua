@@ -123,7 +123,7 @@ function init()
   root_lfo = _lfos:add{min = 20, max = 90}
   root_lfo:add_params('root_lfo', 'root')
   root_lfo:set('action', function(s) params:set('_root', s) end)
-  mode_lfo = _lfos:add{min = 0, max = 6}
+  mode_lfo = _lfos:add{min = 0, max = 7}
   mode_lfo:add_params('mode_lfo', 'mode')
   mode_lfo:set('action', function(s) params:set('_mode', s) end)
 
@@ -134,7 +134,7 @@ function init()
   params:set_action('_duration', function(duration) engine.pong(duration) end)
   params:add_control('_root','root',controlspec.new(0,127,'lin',1,50,''))
   params:set_action('_root', function(root) engine.set_root(root) end)
-  params:add_control('_mode','mode',controlspec.new(0,6,'lin',1,0,''))
+  params:add_control('_mode','mode',controlspec.new(0,7,'lin',1,0,''))
   params:set_action('_mode', function(mode) engine.set_mode(mode) end)
   params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
   params:set_action('_sound', function(sound) engine.set_sound(sound) end)
