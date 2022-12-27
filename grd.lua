@@ -19,6 +19,7 @@ local nsections = 2
 local page = 0
 local npages = 4
 local nsounds = 11
+local nsample = 3
 
 local metro_draw
 
@@ -132,12 +133,14 @@ function init()
   params:add_control('_delta','delta',controlspec.new(0.02,2,'lin',0.01,0.3,'',0.01,false))
   params:add_control('_duration','dur',controlspec.new(0.05,23,'exp',0.05,0.6,'',0.05,false))
   params:set_action('_duration', function(duration) engine.pong(duration) end)
-  params:add_control('_root','root',controlspec.new(0,127,'lin',1,50,''))
+  params:add_control('_root','root',controlspec.new(0,127,'lin',1,50,'',1))
   params:set_action('_root', function(root) engine.set_root(root) end)
   params:add_control('_mode','mode',controlspec.new(0,7,'lin',1,0,''))
   params:set_action('_mode', function(mode) engine.set_mode(mode) end)
   params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
   params:set_action('_sound', function(sound) engine.set_sound(sound) end)
+  params:add_control('_sample','sample',controlspec.new(1,nsample,'lin',1,1,''))
+  params:set_action('_sample', function(sample) engine.set_sample(sample) end)
 
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
@@ -162,6 +165,7 @@ redraw_pages[3][0][1] = function()
     local _sound = params:get('_sound')
     if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end
   end
+redraw_pages[3][0][2] = function() screen.text('sample: ' .. params:get('_sample')) end
 
 redraw_pages[0][1][1] = function() screen.text('tempo: ' .. params:get('clock_tempo')) end
 redraw_pages[0][1][2] = function() screen.text('reverb: ' .. params:string('reverb')) end
@@ -206,6 +210,8 @@ function redraw()
   screen.level(page == 3 and 15 or 2)
   screen.move(64,44+offset)
   redraw_pages[3][section][1]()
+  screen.move(64,50+offset)
+  redraw_pages[3][section][2]()
 
   screen.update()
 end
@@ -238,7 +244,7 @@ enc_update[1][0][3] = function(d) params:delta('_duration', d); engine.pong(para
 enc_update[2][0][2] = function(d) params:delta('_root', d); engine.set_root(params:get('_root')) end
 enc_update[2][0][3] = function(d) params:delta('_mode', d); engine.set_mode(params:get('_mode')) end
 enc_update[3][0][2] = function(d) params:delta('_sound', d); engine.set_sound(params:get('_sound')) end
-enc_update[3][0][3] = function(d) end
+enc_update[3][0][3] = function(d) params:delta('_sample', d); engine.set_sample(params:get('_sample')) end
 for i=0,3 do
   enc_update[i][1][2] = function(d) params:delta('clock_tempo', d) end
   enc_update[i][1][3] = function(d)
