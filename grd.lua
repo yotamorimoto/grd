@@ -181,7 +181,7 @@ for i = 1,3 do
 end
 redraw_pages[0][1][1] = function() screen.text('tempo: ' .. params:get('clock_tempo')) end
 redraw_pages[0][1][2] = function() screen.text('reverb: ' .. params:string('reverb')) end
-redraw_pages[1][1][2] = function() end
+redraw_pages[1][1][1] = function() end
 redraw_pages[1][1][2] = function()
     local m = random_mode[1]
     for i=2,7 do m = m ..'.'.. random_mode[i] end
