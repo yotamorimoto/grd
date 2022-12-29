@@ -19,7 +19,6 @@ local nsections = 2
 local page = 0
 local npages = 4
 local nsounds = 11
-local nsample = 3
 local random_mode = {1,2,3,4,5,6,7}
 
 local metro_draw
@@ -113,15 +112,7 @@ function randomize_mode()
     random_mode[i] = math.random(0, 13)
   end
   params:set('_mode', 0)
-  engine.update_mode(0,
-        random_mode[1],
-        random_mode[2],
-        random_mode[3],
-        random_mode[4],
-        random_mode[5],
-        random_mode[6],
-        random_mode[7]
-        )
+  engine.update_mode(0,table.unpack(random_mode))
 end
 
 function init()
