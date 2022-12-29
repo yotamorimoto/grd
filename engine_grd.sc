@@ -32,7 +32,7 @@ Engine_Grd : CroneEngine {
 		duration = 1;
 		root = 50;
 		group  = ParGroup.tail(context.xg);
-		sample = Celesta.celesta;
+		sample = Sample.celesta;
 		map    = sample.map;
 		mode   = [
 			[0,2,4,6,7,9,11],
@@ -128,5 +128,5 @@ Engine_Grd : CroneEngine {
 			sound = m[1]
 		});
 	}
-	free { sample.do(_.free); confetti.do(_.do(_.free)); }
+	free { sample.free; confetti.do(_.do(_.free)); }
 }
