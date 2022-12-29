@@ -2,7 +2,7 @@ Engine_Grd : CroneEngine {
 
 	var group,sample,map,d2k;
 	var duration, root, mode, mindex;
-	var confetti, sound, smpl_id, smpl_lib;
+	var confetti, sound;
 
 	*new { |context, doneCallback| ^super.new(context, doneCallback) }
 
@@ -12,18 +12,14 @@ Engine_Grd : CroneEngine {
 		Server.default = context.server;
 		s = Server.default;
 		sound = 0;
-		smpl_id = 1;
-		smpl_lib = [ Sample.celesta, 
-					 Sample.felt, 
-					 Sample.tweed ];
 		confetti = [
 			//[Buffer.read(s, p +/+ "gml_32.wav"), 32],
-			[Buffer.read(s, p +/+ "cel_65.wav"), 65],
-			[Buffer.read(s, p +/+ "pf_95.wav"), 95],
+			// [Buffer.read(s, p +/+ "cel_65.wav"), 65],
+			// [Buffer.read(s, p +/+ "pf_95.wav"), 95],
 			[Buffer.read(s, p +/+ "hrp_59.wav"), 59],
 			[Buffer.read(s, p +/+ "kba_58.wav"), 58],
 			[Buffer.read(s, p +/+ "mba_59.wav"), 59],
-			// [Buffer.read(s, p +/+ "pan_74.wav"), 74],
+			[Buffer.read(s, p +/+ "pan_74.wav"), 74],
 			[Buffer.read(s, p +/+ "gtr_63.wav"), 63],
 			[Buffer.read(s, p +/+ "oud_52.wav"), 52],
 			[Buffer.read(s, p +/+ "toy_84.wav"), 84],
@@ -36,7 +32,7 @@ Engine_Grd : CroneEngine {
 		duration = 1;
 		root = 50;
 		group  = ParGroup.tail(context.xg);
-		sample = smpl_lib[smpl_id];
+		sample = Celesta.celesta;
 		map    = sample.map;
 		mode   = [
 			[0,2,4,6,7,9,11],
@@ -130,11 +126,6 @@ Engine_Grd : CroneEngine {
 		});
 		this.addCommand(\set_sound, "i", { |m|
 			sound = m[1]
-		});
-		this.addCommand(\set_sample, "i", { |m|
-			smpl_id = m[1];
-			sample  = smpl_lib[smpl_id];
-			map     = sample.map;
 		});
 	}
 	free { sample.do(_.free); confetti.do(_.do(_.free)); }
