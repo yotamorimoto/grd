@@ -156,8 +156,6 @@ function init()
   params:set_action('_mode', function(mode) engine.set_mode(mode) end)
   params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,'',0.005, false))
   params:set_action('_sound', function(sound) engine.set_sound(sound) end)
-  params:add_control('_sample','sample',controlspec.new(1,nsample,'lin',1,1,''),0.005, false)
-  params:set_action('_sample', function(sample) engine.set_sample(sample) end)
 
   metro_draw = metro.init(function() redraw() end, 1/60)
   metro_draw:start()
@@ -182,7 +180,7 @@ redraw_pages[3][0][1] = function()
     local _sound = params:get('_sound')
     if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end
   end
-redraw_pages[3][0][2] = function() screen.text('sample: ' .. params:get('_sample')) end
+redraw_pages[3][0][2] = function() end
 
 for i = 1,3 do
   for j = 1,2 do
@@ -280,7 +278,7 @@ enc_update[1][0][3] = function(d) params:delta('_duration', d); engine.pong(para
 enc_update[2][0][2] = function(d) params:delta('_root', d); engine.set_root(params:get('_root')) end
 enc_update[2][0][3] = function(d) params:delta('_mode', d); engine.set_mode(params:get('_mode')) end
 enc_update[3][0][2] = function(d) params:delta('_sound', d); engine.set_sound(params:get('_sound')) end
-enc_update[3][0][3] = function(d) params:delta('_sample', d); engine.set_sample(params:get('_sample')) end
+enc_update[3][0][3] = function(d) end
 
 enc_update[0][1][2] = function(d) params:delta('clock_tempo', d) end
 enc_update[0][1][3] = function(d)
