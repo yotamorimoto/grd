@@ -14,8 +14,8 @@ Engine_Grd : CroneEngine {
 		sound = 0;
 		confetti = [
 			//[Buffer.read(s, p +/+ "gml_32.wav"), 32],
-			// [Buffer.read(s, p +/+ "cel_65.wav"), 65],
-			// [Buffer.read(s, p +/+ "pf_95.wav"), 95],
+			//[Buffer.read(s, p +/+ "cel_65.wav"), 65],
+			//[Buffer.read(s, p +/+ "pf_95.wav"), 95],
 			[Buffer.read(s, p +/+ "hrp_59.wav"), 59],
 			[Buffer.read(s, p +/+ "kba_58.wav"), 58],
 			[Buffer.read(s, p +/+ "mba_59.wav"), 59],

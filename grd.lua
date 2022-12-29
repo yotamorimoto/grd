@@ -4,6 +4,7 @@
 --
 -- k3 start/stop
 -- k2 page
+-- k1+k2 random params
 -- enc1 section 
 -- enc2,3 params
 
@@ -132,7 +133,7 @@ function init()
   root_lfo = _lfos:add{min = 20, max = 90}
   root_lfo:add_params('root_lfo', 'root')
   root_lfo:set('action', function(s) params:set('_root', s) end)
-  mode_lfo = _lfos:add{min = 0, max = 7}
+  mode_lfo = _lfos:add{min = 0, max = 6}
   mode_lfo:add_params('mode_lfo', 'mode')
   mode_lfo:set('action', function(s) params:set('_mode', s) end)
 
