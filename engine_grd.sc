@@ -46,7 +46,6 @@ Engine_Grd : CroneEngine {
 			[0,2,3,5,7,8,10],
 			[0,1,3,5,7,8,10],
 			[0,1,3,5,6,8,10],
-			[0,1,3,5,6,8,10,12,14,15],
 		];
 		mindex = 0;
 		d2k = { |degree, mode|
@@ -125,13 +124,18 @@ Engine_Grd : CroneEngine {
 		this.addCommand(\set_mode, "f", { |m|
 			mindex = m[1].asInteger
 		});
+		this.addCommand(\update_mode, "iiiiiiii", { |m|
+			mindex = m[1];
+			mode[mindex] = m[[2,3,4,5,6,7,8]];
+		});
 		this.addCommand(\set_sound, "i", { |m|
 			sound = m[1]
-		});this.addCommand(\set_sample, "i", { |m|
+		});
+		this.addCommand(\set_sample, "i", { |m|
 			smpl_id = m[1];
 			sample  = smpl_lib[smpl_id];
 			map     = sample.map;
 		});
 	}
-	free { sample.free; confetti.do(_.do(_.free)); }
+	free { sample.do(_.free); confetti.do(_.do(_.free)); }
 }
