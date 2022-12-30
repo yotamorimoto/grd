@@ -233,11 +233,11 @@ end
 
 enc_update[0][0][2] = function(d) params:delta('_r', d) end
 enc_update[0][0][3] = function(d) params:delta('_g', d) end
-enc_update[1][0][2] = function(d) params:delta('_delta', d) end 
-enc_update[1][0][3] = function(d) params:delta('_duration', d); engine.pong(params:get('_duration')) end
-enc_update[2][0][2] = function(d) params:delta('_root', d); engine.set_root(params:get('_root')) end
-enc_update[2][0][3] = function(d) params:delta('_mode', d); engine.set_mode(params:get('_mode')) end
-enc_update[3][0][2] = function(d) params:delta('_sound', d); engine.set_sound(params:get('_sound')) end
+enc_update[1][0][2] = function(d) params:delta('_delta', d) end
+enc_update[1][0][3] = function(d) params:delta('_duration', d) end
+enc_update[2][0][2] = function(d) params:delta('_root', d) end
+enc_update[2][0][3] = function(d) params:delta('_mode', d) end
+enc_update[3][0][2] = function(d) params:delta('_sound', d) end
 enc_update[3][0][3] = function(d) end
 for i=0,3 do
   enc_update[i][1][2] = function(d) params:delta('clock_tempo', d) end
