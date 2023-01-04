@@ -20,7 +20,7 @@ local nsections = 2
 local page = 0
 local npages = 4
 local nsounds = 11
-local random_mode = {1,2,3,4,5,6,7}
+local random_mode = {0,2,4,6,8,9,11} -- lydian augmented
 
 local metro_draw
 
@@ -109,11 +109,13 @@ function clock.transport.reset()
 end
 
 function randomize_mode()
-  for i = 1, 7 do
-    random_mode[i] = math.random(0, 13)
+  random_mode[1] = 0 -- zero == root. so always zero.
+  for i = 2,7 do
+    random_mode[i] = math.random(1,11)
   end
+  table.sort(random_mode)
   params:set('_mode', 0)
-  engine.update_mode(0,table.unpack(random_mode))
+  engine.update_mode(0, table.unpack(random_mode))
 end
 
 function init()
@@ -181,11 +183,11 @@ for i = 1,3 do
 end
 redraw_pages[0][1][1] = function() screen.text('tempo: ' .. params:get('clock_tempo')) end
 redraw_pages[0][1][2] = function() screen.text('reverb: ' .. params:string('reverb')) end
-redraw_pages[1][1][1] = function() end
+redraw_pages[1][1][1] = function() screen.text('new mode?') end
 redraw_pages[1][1][2] = function()
     local m = random_mode[1]
-    for i=2,7 do m = m ..'.'.. random_mode[i] end
-    screen.text('? ' .. m)
+    for i=2,7 do m = m ..','.. random_mode[i] end
+    screen.text(m)
   end
 
 
@@ -231,7 +233,6 @@ function redraw()
 end
 
 function key(n,z)
-  -- print('key' .. n .. " is " .. z)
   if n == 1 then
     alt = z==1
   elseif n == 3 and z == 1 then

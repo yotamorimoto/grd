@@ -35,13 +35,13 @@ Engine_Grd : CroneEngine {
 		sample = Sample.celesta;
 		map    = sample.map;
 		mode   = [
-			[0,2,4,6,7,9,11],
-			[0,2,4,5,7,9,11],
-			[0,2,4,5,7,9,10],
-			[0,2,3,5,7,9,10],
-			[0,2,3,5,7,8,10],
-			[0,1,3,5,7,8,10],
-			[0,1,3,5,6,8,10],
+			[0,2,4,6,7,9,11], // lydian
+			[0,2,4,5,7,9,11], // ionian
+			[0,2,4,5,7,9,10], // mixolydian
+			[0,2,3,5,7,9,10], // dorian
+			[0,2,3,5,7,8,10], // aeolean
+			[0,1,3,5,7,8,10], // phrygian
+			[0,1,3,5,6,8,10], // locrian
 		];
 		mindex = 0;
 		d2k = { |degree, mode|
@@ -117,12 +117,8 @@ Engine_Grd : CroneEngine {
 		this.addCommand(\set_root, "f", { |m|
 			root = m[1].asInteger
 		});
-		this.addCommand(\set_mode, "f", { |m|
+		this.addCommand(\set_mode, "i", { |m|
 			mindex = m[1].asInteger
-		});
-		this.addCommand(\update_mode, "iiiiiiii", { |m|
-			mindex = m[1];
-			mode[mindex] = m[[2,3,4,5,6,7,8]];
 		});
 		this.addCommand(\set_sound, "i", { |m|
 			sound = m[1]
