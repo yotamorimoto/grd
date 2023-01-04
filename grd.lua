@@ -19,7 +19,7 @@ local section = 0
 local nsections = 2
 local page = 0
 local npages = 4
-local nsounds = 11
+local nsounds = 9
 local random_mode = {0,2,4,6,8,9,11} -- lydian augmented
 
 local metro_draw
@@ -108,18 +108,8 @@ function clock.transport.reset()
   print("transport.reset")
 end
 
-function randomize_mode()
-  random_mode[1] = 0 -- zero == root. so always zero.
-  for i = 2,7 do
-    random_mode[i] = math.random(1,11)
-  end
-  table.sort(random_mode)
-  params:set('_mode', 0)
-  engine.update_mode(0, table.unpack(random_mode))
-end
-
 function init()
-  params:add_group('LFOs', 15*6)   -- rows * #lfo
+  params:add_group('LFOs', 15*7)   -- rows * #lfo
   r_lfo = _lfos:add{min = 0, max = 1}
   r_lfo:add_params('r_lfo', 'R')
   r_lfo:set('action', function(s) params:set('_r', s) end)
@@ -138,6 +128,9 @@ function init()
   mode_lfo = _lfos:add{min = 0, max = 6}
   mode_lfo:add_params('mode_lfo', 'mode')
   mode_lfo:set('action', function(s) params:set('_mode', s) end)
+  sound_lfo = _lfos:add { min=0, max=nsounds-1 }
+  sound_lfo:add_params('sound_lfo', 'sound')
+  sound_lfo:set('action', function(s) params:set('_sound', s) end)
 
   params:add_control('_r','R',controlspec.new(0,1,'lin',0.001,0.7,'',0.001,false))
   params:add_control('_g','G',controlspec.new(0,1,'lin',0.001,0.1,'',0.001,false))
@@ -148,7 +141,7 @@ function init()
   params:set_action('_root', function(root) engine.set_root(root) end)
   params:add_control('_mode','mode',controlspec.new(0,6,'lin',1,0,''))
   params:set_action('_mode', function(mode) engine.set_mode(mode) end)
-  params:add_control('_sound','sound',controlspec.new(0,nsounds,'lin',1,0,''))
+  params:add_control('_sound','sound',controlspec.new(0,nsounds-1,'lin',1,0,''))
   params:set_action('_sound', function(sound) engine.set_sound(sound) end)
 
   metro_draw = metro.init(function() redraw() end, 1/60)
@@ -170,10 +163,7 @@ redraw_pages[1][0][1] = function() screen.text('delta: ' .. sc.round(params:get(
 redraw_pages[1][0][2] = function() screen.text('dur: ' .. sc.round(params:get('_duration'),3)) end
 redraw_pages[2][0][1] = function() screen.text('root: ' .. params:get('_root')) end
 redraw_pages[2][0][2] = function() screen.text('mode: ' .. params:get('_mode')) end
-redraw_pages[3][0][1] = function()
-    local _sound = params:get('_sound')
-    if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end
-  end
+redraw_pages[3][0][1] = function() screen.text('sound: ' .. params:get('_sound')) end
 redraw_pages[3][0][2] = function() end
 
 for i = 1,3 do
@@ -183,13 +173,6 @@ for i = 1,3 do
 end
 redraw_pages[0][1][1] = function() screen.text('tempo: ' .. params:get('clock_tempo')) end
 redraw_pages[0][1][2] = function() screen.text('reverb: ' .. params:string('reverb')) end
-redraw_pages[1][1][1] = function() screen.text('new mode?') end
-redraw_pages[1][1][2] = function()
-    local m = random_mode[1]
-    for i=2,7 do m = m ..','.. random_mode[i] end
-    screen.text(m)
-  end
-
 
 -- should be global
 function redraw()
@@ -280,10 +263,7 @@ enc_update[0][1][3] = function(d)
     if rev == 1 then audio.rev_off() else audio.rev_on() end
     norns.state.mix.aux = rev
 end
-enc_update[1][1][2] = function(d)
-  if d > 0 then randomize_mode() end
-end
-enc_update[1][1][3] = function(d) end
+
 for i=2,3 do
   enc_update[i][1][2] = function(d) end
   enc_update[i][1][3] = function(d) end
