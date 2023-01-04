@@ -120,6 +120,10 @@ Engine_Grd : CroneEngine {
 		this.addCommand(\set_mode, "f", { |m|
 			mindex = m[1].asInteger
 		});
+		this.addCommand(\update_mode, "iiiiiiii", { |m|
+			mindex = m[1];
+			mode[mindex] = m[[2,3,4,5,6,7,8]];
+		});
 		this.addCommand(\set_sound, "i", { |m|
 			sound = m[1]
 		});

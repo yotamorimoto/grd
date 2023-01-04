@@ -4,6 +4,7 @@
 --
 -- k3 start/stop
 -- k2 page
+-- k1+k2 random params
 -- enc1 section 
 -- enc2,3 params
 
@@ -19,6 +20,7 @@ local nsections = 2
 local page = 0
 local npages = 4
 local nsounds = 11
+local random_mode = {1,2,3,4,5,6,7}
 
 local metro_draw
 
@@ -106,6 +108,14 @@ function clock.transport.reset()
   print("transport.reset")
 end
 
+function randomize_mode()
+  for i = 1, 7 do
+    random_mode[i] = math.random(0, 13)
+  end
+  params:set('_mode', 0)
+  engine.update_mode(0,table.unpack(random_mode))
+end
+
 function init()
   params:add_group('LFOs', 15*6)   -- rows * #lfo
   r_lfo = _lfos:add{min = 0, max = 1}
@@ -162,14 +172,22 @@ redraw_pages[3][0][1] = function()
     local _sound = params:get('_sound')
     if _sound >= (nsounds) then screen.text('sound: *') else screen.text('sound: ' .. _sound) end
   end
+redraw_pages[3][0][2] = function() end
 
-redraw_pages[0][1][1] = function() screen.text('tempo: ' .. params:get('clock_tempo')) end
-redraw_pages[0][1][2] = function() screen.text('reverb: ' .. params:string('reverb')) end
 for i = 1,3 do
   for j = 1,2 do
     redraw_pages[i][1][j] = function() end
   end
 end
+redraw_pages[0][1][1] = function() screen.text('tempo: ' .. params:get('clock_tempo')) end
+redraw_pages[0][1][2] = function() screen.text('reverb: ' .. params:string('reverb')) end
+redraw_pages[1][1][1] = function() end
+redraw_pages[1][1][2] = function()
+    local m = random_mode[1]
+    for i=2,7 do m = m ..'.'.. random_mode[i] end
+    screen.text('? ' .. m)
+  end
+
 
 -- should be global
 function redraw()
@@ -185,41 +203,55 @@ function redraw()
   end
 
   offset = 3
-  screen.level((page == 0 or section == 1) and 15 or 2)
-  screen.move(64,8+offset)
-  redraw_pages[0][section][1]()
-  screen.move(64,14+offset)
-  redraw_pages[0][section][2]()
-
-  screen.level(page == 1 and 15 or 2)
-  screen.move(64,20+offset)
-  redraw_pages[1][section][1]()
-  screen.move(64,26+offset)
-  redraw_pages[1][section][2]()
-
-  screen.level(page == 2 and 15 or 2)
-  screen.move(64,32+offset)
-  redraw_pages[2][section][1]()
-  screen.move(64,38+offset)
-  redraw_pages[2][section][2]()
-
-  screen.level(page == 3 and 15 or 2)
-  screen.move(64,44+offset)
-  redraw_pages[3][section][1]()
+  row = 8 + offset
+  if section == 0 then
+    for i = 0,3 do
+      screen.level(page == i and 15 or 2)
+      screen.move(64, row)
+      redraw_pages[i][0][1]()
+      row = row + 6
+      screen.move(64,row)
+      redraw_pages[i][0][2]()    
+      row = row + 6
+    end
+  elseif section == 1 then
+    if page > 1 then page = 0 end
+    for i = 0,1 do
+      screen.level(page == i and 15 or 2)
+      screen.move(64,row)
+      redraw_pages[i][1][1]()
+      row = row + 6
+      screen.move(64,row)
+      redraw_pages[i][1][2]()
+      row = row + 6
+    end
+  end
 
   screen.update()
 end
 
 function key(n,z)
   -- print('key' .. n .. " is " .. z)
-  if n == 3 and z == 1 then
+  if n == 1 then
+    alt = z==1
+  elseif n == 3 and z == 1 then
     if not playing then
       clock.transport.start()
     else
       clock.transport.stop()
     end
   elseif n == 2 and z == 1 then
-    page = (page+1)%npages
+    if not alt==true then
+      local pdiv = section==0 and npages or 2
+      page = (page+1)%pdiv
+    else
+      params:set('_r', sc.round(math.random(), 3));
+      params:set('_g', sc.round(math.random(), 3));
+      params:set('_delta', sc.round(math.random(), 2));
+      params:set('_duration', sc.round(math.random()*7, 2));
+      params:set('_root', math.random(40,55));
+      params:set('_mode', math.random(0,7));
+    end
   end
 end
 
@@ -239,21 +271,29 @@ enc_update[2][0][2] = function(d) params:delta('_root', d) end
 enc_update[2][0][3] = function(d) params:delta('_mode', d) end
 enc_update[3][0][2] = function(d) params:delta('_sound', d) end
 enc_update[3][0][3] = function(d) end
-for i=0,3 do
-  enc_update[i][1][2] = function(d) params:delta('clock_tempo', d) end
-  enc_update[i][1][3] = function(d)
-      local rev = d > 0 and 2 or 1
-      params:set('reverb', rev)
-      if rev == 1 then audio.rev_off() else audio.rev_on() end
-      norns.state.mix.aux = rev
-  end
+
+enc_update[0][1][2] = function(d) params:delta('clock_tempo', d) end
+enc_update[0][1][3] = function(d)
+    local rev = d > 0 and 2 or 1
+    params:set('reverb', rev)
+    if rev == 1 then audio.rev_off() else audio.rev_on() end
+    norns.state.mix.aux = rev
+end
+enc_update[1][1][2] = function(d)
+  if d > 0 then randomize_mode() end
+end
+enc_update[1][1][3] = function(d) end
+for i=2,3 do
+  enc_update[i][1][2] = function(d) end
+  enc_update[i][1][3] = function(d) end
 end
 
 function enc(n,d)
   if n == 1 then
     section = util.clamp(section + d, 0, nsections-1)
+  else
+    enc_update[page][section][n](d)
   end
-  enc_update[page][section][n](d)
 end
 
 function cleanup()
