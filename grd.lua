@@ -278,6 +278,6 @@ function enc(n,d)
 end
 
 function cleanup()
-  m_draw:stop()
+  metro_draw:stop()
   metro.free_all()
 end
